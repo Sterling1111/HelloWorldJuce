@@ -6,7 +6,7 @@
 #define JUCE_EXAMPLES_BULLSHIT_H
 
 juce::String printBullshit() {
-    return {"I don't give a flying fuck"};
+    return {"master branch"};
 }
 
 #endif //JUCE_EXAMPLES_BULLSHIT_H
