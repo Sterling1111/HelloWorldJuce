@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "MainComponent.h"
 
 //==============================================================================
@@ -5,15 +7,13 @@ class GuiAppApplication  : public juce::JUCEApplication
 {
 public:
     //==============================================================================
-    GuiAppApplication() {
-
-    }
+    GuiAppApplication() = default;
 
     // We inject these as compile definitions from the CMakeLists.txt
     // If you've enabled the juce header with `juce_generate_juce_header(<thisTarget>)`
     // you could `#include <JuceHeader.h>` and use `ProjectInfo::projectName` etc. instead.
     //const juce::String getApplicationName() override       { return JUCE_APPLICATION_NAME_STRING; }
-    const juce::String s{"Suck my cock bitch"};
+    const juce::String s{"hes got balls"};
     const juce::String getApplicationName() override       { return s; }
     const juce::String getApplicationVersion() override    { return JUCE_APPLICATION_VERSION_STRING; }
     bool moreThanOneInstanceAllowed() override             { return true; }
@@ -24,8 +24,12 @@ public:
         // This method is where you should put your application's initialisation code..
         juce::ignoreUnused (commandLine);
 
-        mainWindow.reset (new MainWindow (getApplicationName()));
+        juce::Logger::outputDebugString("what the hell");
+
+        mainWindow = std::make_unique<MainWindow> (getApplicationName());
     }
+
+
 
     void shutdown() override
     {
@@ -58,18 +62,17 @@ public:
     class MainWindow    : public juce::DocumentWindow
     {
     public:
-        explicit MainWindow (juce::String name)
-            : DocumentWindow (name,
-                              juce::Desktop::getInstance().getDefaultLookAndFeel()
-                                                          .findColour (ResizableWindow::backgroundColourId),
-                              DocumentWindow::allButtons)
+        explicit MainWindow (const juce::String& name)
+            : DocumentWindow (name, juce::Colours::black,
+                              DocumentWindow::closeButton | DocumentWindow::minimiseButton)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new MainComponent(), true);
-            setResizable (true, true);
+            mainComponent = std::make_unique<MainComponent>();
+            setContentOwned (mainComponent.get(), true);
+            mainComponent->setWantsKeyboardFocus(true);
+            mainComponent->grabKeyboardFocus();
             setResizable(false, false);
-            centreWithSize (getWidth(), getHeight());
-
+            centreWithSize(getWidth(), getHeight());
             setVisible (true);
         }
 
@@ -87,6 +90,8 @@ public:
            you really have to override any DocumentWindow methods, make sure your
            subclass also calls the superclass's method.
         */
+
+        std::unique_ptr<MainComponent> mainComponent;
 
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
