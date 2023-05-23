@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 project( SystemLib )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-variable")
-
-
 set(SYSTEM_LIB_SOURCES
         "System.cpp"
         "vrEmuLcd.cpp"

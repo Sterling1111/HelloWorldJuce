@@ -3,6 +3,11 @@
 
 LCD::LCD() {
     lcd = vrEmuLcdNew(LCD_WIDTH, LCD_HEIGHT, EmuLcdRomA00);
+    /*vrEmuLcdSendCommand(lcd, LCD_CMD_FUNCTION | LCD_CMD_FUNCTION_LCD_2LINE | 0x10);
+    vrEmuLcdSendCommand(lcd, LCD_CMD_CLEAR);
+    vrEmuLcdSendCommand(lcd, LCD_CMD_HOME);
+    vrEmuLcdSendCommand(lcd, LCD_CMD_DISPLAY | LCD_CMD_DISPLAY_ON);
+    vrEmuLcdSendCommand(lcd, LCD_CMD_DISPLAY_CURSOR);*/
 }
 
 LCD::~LCD() {
@@ -10,10 +15,14 @@ LCD::~LCD() {
 }
 
 void LCD::sendCommand(uint8_t data) {
+    busy = true;
+    lcdInstructionStartTimePoint = __rdtsc();
     vrEmuLcdSendCommand(lcd, data);
 }
 
 void LCD::writeByte(uint8_t data) {
+    busy = true;
+    lcdInstructionStartTimePoint = __rdtsc();
     vrEmuLcdWriteByte(lcd, data);
 }
 
@@ -26,11 +35,11 @@ char LCD::pixelState(unsigned x, unsigned y) {
 }
 
 unsigned LCD::numPixelsX() {
-    return (unsigned) vrEmuLcdNumPixelsX(lcd);
+    return vrEmuLcdNumPixelsX(lcd);
 }
 
 unsigned LCD::numPixelsY() {
-    return (unsigned) vrEmuLcdNumPixelsY(lcd);
+    return vrEmuLcdNumPixelsY(lcd);
 }
 
 void LCD::portAWrite(byte data) {
@@ -52,6 +61,8 @@ void LCD::portAWrite(byte data) {
             data_lines = 0b10000000;
         }
     }
+    if((__rdtsc() - lcdInstructionStartTimePoint) > lcdFunctionDuration)
+        busy = false;
 }
 
 void LCD::portBWrite(byte data) {

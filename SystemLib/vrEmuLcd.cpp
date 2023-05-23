@@ -32,9 +32,9 @@ static void increment(VrEmuLcd* lcd)
     ptrdiff_t offset = lcd->ddPtr - lcd->ddRam;
 
     if (lcd->gdPtr)// && !lcd->graphicsMode)
-    {
+        {
         if (offset >= 0x40) lcd->ddPtr = lcd->ddRam;
-    }
+        }
     else if (lcd->rows > 1)
     {
         if (offset == 0x28) lcd->ddPtr = lcd->ddRam + 0x40;
@@ -109,7 +109,7 @@ static void doShift(VrEmuLcd* lcd)
             }
         }
     }
-        // otherwise, shift the ddram pointer or scroll offset
+    // otherwise, shift the ddram pointer or scroll offset
     else if (lcd->graphicsMode)
     {
         ++lcd->gdPtr;
@@ -211,13 +211,13 @@ VrEmuLcd* vrEmuLcdNew(int cols, int rows, vrEmuLcdCharacterRom rom)
                 lcd->dataWidthCols = DATA_WIDTH_CHARS_1ROW;
                 break;
 
-            case 2:
-                lcd->dataWidthCols = DATA_WIDTH_CHARS_2ROW;
-                break;
+                case 2:
+                    lcd->dataWidthCols = DATA_WIDTH_CHARS_2ROW;
+                    break;
 
-            case 4:
-                lcd->dataWidthCols = DATA_WIDTH_CHARS_4ROW;
-                break;
+                    case 4:
+                        lcd->dataWidthCols = DATA_WIDTH_CHARS_4ROW;
+                        break;
         }
 
         if (graphicsLCD)
@@ -516,12 +516,12 @@ void vrEmuLcdWriteString(VrEmuLcd* lcd, const char* str)
 const uint8_t* vrEmuLcdCharBits(VrEmuLcd* lcd, uint8_t c)
 {
     if (lcd->gdRam) // graphic LCD?
-    {
+        {
         if (c < CGRAM_STORAGE_CHARS) c = CGRAM_STORAGE_CHARS;
         {
             return fontGfx[c - CGRAM_STORAGE_CHARS];
         }
-    }
+        }
 
     if (c < CGRAM_STORAGE_CHARS)
     {
@@ -535,9 +535,9 @@ const uint8_t* vrEmuLcdCharBits(VrEmuLcd* lcd, uint8_t c)
         case EmuLcdRomA00:
             return fontA00[characterRomIndex];
 
-        case EmuLcdRomA02:
-        default:
-            return fontA02[characterRomIndex];
+            case EmuLcdRomA02:
+                default:
+                    return fontA02[characterRomIndex];
     }
 }
 
@@ -586,7 +586,7 @@ int vrEmuLcdGetDataOffset(VrEmuLcd* lcd, int row, int col)
 void vrEmuLcdUpdatePixels(VrEmuLcd* lcd)
 {
     if (lcd->gdRam) // is a graphics LCD
-    {
+        {
         if (lcd->graphicsMode)
         {
             uint8_t* p = lcd->pixels - 1;
@@ -614,7 +614,7 @@ void vrEmuLcdUpdatePixels(VrEmuLcd* lcd)
             if (lcd->displayFlags & LCD_CMD_DISPLAY_CURSOR_BLINK)
             {
                 if (((int)(clock() * CLOCK_TO_MS) % CURSOR_BLINK_CYCLE_MS)
-                    < CURSOR_BLINK_PERIOD_MS)
+                < CURSOR_BLINK_PERIOD_MS)
                 {
                     cursorOn &= ~LCD_CMD_DISPLAY_CURSOR_BLINK;
                 }
@@ -660,7 +660,7 @@ void vrEmuLcdUpdatePixels(VrEmuLcd* lcd)
                             if (drawCursor)
                             {
                                 if ((cursorOn & LCD_CMD_DISPLAY_CURSOR_BLINK) ||
-                                    ((cursorOn & LCD_CMD_DISPLAY_CURSOR) && y == GFX_CHAR_HEIGHT_PX - 1))
+                                ((cursorOn & LCD_CMD_DISPLAY_CURSOR) && y == GFX_CHAR_HEIGHT_PX - 1))
                                 {
                                     *pixel = 1;
                                 }
@@ -673,7 +673,7 @@ void vrEmuLcdUpdatePixels(VrEmuLcd* lcd)
                 }
             }
         }
-    }
+        }
     else
     {
         // determine cursor blink state
@@ -681,7 +681,7 @@ void vrEmuLcdUpdatePixels(VrEmuLcd* lcd)
         if (lcd->displayFlags & LCD_CMD_DISPLAY_CURSOR_BLINK)
         {
             if (((int)(clock() * CLOCK_TO_MS) % CURSOR_BLINK_CYCLE_MS)
-                < CURSOR_BLINK_PERIOD_MS)
+            < CURSOR_BLINK_PERIOD_MS)
             {
                 cursorOn &= ~LCD_CMD_DISPLAY_CURSOR_BLINK;
             }
@@ -727,7 +727,7 @@ void vrEmuLcdUpdatePixels(VrEmuLcd* lcd)
                         if (drawCursor)
                         {
                             if ((cursorOn & LCD_CMD_DISPLAY_CURSOR_BLINK) ||
-                                ((cursorOn & LCD_CMD_DISPLAY_CURSOR) && y == CHAR_HEIGHT_PX - 1))
+                            ((cursorOn & LCD_CMD_DISPLAY_CURSOR) && y == CHAR_HEIGHT_PX - 1))
                             {
                                 *pixel = 1;
                             }
@@ -788,6 +788,5 @@ char vrEmuLcdPixelState(VrEmuLcd* lcd, int x, int y)
     int offset = y * lcd->pixelsWidth + x;
     if (offset >= 0 && offset < lcd->numPixels)
         return lcd->pixels[offset];
-    int cat;
     return -1;
 }

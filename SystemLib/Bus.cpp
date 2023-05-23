@@ -6,7 +6,7 @@ Bus::Bus(RAM& ram, sdword ramMin, sdword ramMax, W65C22& registers, sdword regMi
         regMin{regMin}, regMax{regMax}, eeprom{eeprom}, romMin{romMin}, romMax{romMax} {}
 
 void Bus::write(byte data, word address) {
-    if(log and outFile.is_open()) {
+    if(log && outFile.is_open()) {
         outFile << std::setfill('0') << std::setw(4) << std::hex << address << "  " << "W  ";
         outFile << std::setfill('0') << std::setw(2) << std::hex << static_cast<word>(data) << std::endl;
     }
@@ -21,7 +21,7 @@ void Bus::write(byte data, word address) {
 byte Bus::read(word address) {
     if(address >= ramMin && address <= ramMax) {
         byte data{ram[address - ramMin]};
-        if(log and outFile.is_open()) {
+        if(log && outFile.is_open()) {
             outFile << std::setfill('0') << std::setw(4) << std::hex << address << "  " << "R  ";
             outFile << std::setfill('0') << std::setw(2) << std::hex << static_cast<word>(data) << std::endl;
         }

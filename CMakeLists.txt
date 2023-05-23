@@ -33,7 +33,9 @@ add_executable(JUCE_examples main.cpp GuiApp/bullshit.h GuiApp/bullshit.h)
 #
 # ==============================================================================
 
-#add_subdirectory(AudioPlugin)
-#add_subdirectory(ConsoleApp)
+add_subdirectory("C://JUCE" JUCE)
+add_subdirectory("C://JUCE//extras" extras)
+add_subdirectory(AudioPlugin)
+add_subdirectory(ConsoleApp)
 add_subdirectory(GuiApp)
 add_subdirectory(SystemLib)

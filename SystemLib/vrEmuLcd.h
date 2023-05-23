@@ -54,10 +54,10 @@ static int rowOffsets[]    = { 0x00, 0x40, 0x14, 0x54 };
 static int rowOffsetsGfx[] = { 0x00, 0x10, 0x08, 0x18 };
 
 enum vrEmuLcdCharacterRom
-{
+        {
     EmuLcdRomA00,  // Japanese
     EmuLcdRomA02   // European
-};
+        };
 
 
 /* PRIVATE DATA STRUCTURE
@@ -66,8 +66,8 @@ enum vrEmuLcdCharacterRom
 //typedef struct vrEmuLcd VrEmuLcd;
 
 class VrEmuLcd
-{
-public:
+        {
+        public:
     // size in characters
     int cols;
     int rows;
@@ -101,7 +101,7 @@ public:
     int pixelsWidth;
     int pixelsHeight;
     int numPixels;
-};
+        };
 
 /* PUBLIC CONSTANTS
  * ---------------------------------------- */
