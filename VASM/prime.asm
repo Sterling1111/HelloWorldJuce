@@ -4,23 +4,18 @@ DDRB = $6002
 DDRA = $6003
 
 value = $0200 ; 2 bytes
-mod10 = $0202 ; 2 bytes
+divider = $0202 ; 2 bytes
 message = $0204 ; 6 bytes
-counter = $020a
-Fn = $2000
-Fn_1 = $2002
-Fn_2 = $2004
 
 E  = %10000000
 RW = %01000000
 RS = %00100000
 
-  .org $8000
+    .org $8000
 
 reset:
   ldx #$ff
   txs
-
   lda #%11111111 ; Set all pins on port B to output
   sta DDRB
   lda #%11100000 ; Set top 3 pins on port A to output
@@ -35,230 +30,96 @@ reset:
   lda #%00000001 ; Clear display
   jsr lcd_instruction
 
-restart:
-  lda #%00000001 ; Clear display
-  jsr lcd_instruction
-  lda #$01
-  sta Fn_1
-  lda #$00
-  sta Fn_2
-
-print_odds:
-  lda Fn_1
-  and #$01
-  cmp #$01
-  bne skip
-  lda Fn_1
-  sta message
-  lda #$00
-  sta message + 1
-  jsr print_num
-  lda #%00000001 ; Clear display
-  jsr lcd_instruction
-skip:
-  clc
-  lda Fn_1
-  adc #$02
-  sta Fn_1
-  lda Fn_2
-  adc #$00
-  sta Fn_2
-  lda Fn_1
-  cmp #$63
-  bcc print_odds
-
-end:
-  ; end of program
-  jmp end
-
-print_num:
-  lda #0
-  sta message + 2
-  sta message + 3
-  sta message + 4
-  sta message + 5
+  lda #2 ; Start with the first prime
   sta value
-  lda Fn_1
-  sta value + 1
+  jmp check_prime
 
-  ; Divide value by 10 to get tens place
-  jsr divide
-  lda mod10
-  sta message + 2
-
-  ; Get ones place
-  lda valuej
-  sta mod10
-  lda value + 1
-  sta mod10 + 1
-  lda #"0"
-  clc
-  adc mod10
-  sta message + 3
-
-  ; Print tens and ones places to LCD
-  jsr print
+increment_num:
+  inc value
+  bne no_carry
+  inc value+1
+no_carry:
   rts
 
+check_prime:
+  lda #2
+  sta divider
+  lda #0
+  sta divider+1
+  jmp divide
 
 divide:
-  ; Initialize the remainder to zero
-  lda #0
-  sta mod10
-  sta mod10 + 1
-  clc
-
-  ldx #16
-
-
-
-divloop:
-  ; Rotate quotient and remainder
-  rol value
-  rol value + 1
-  rol mod10
-  rol mod10 + 1
-
-  ; a,y = dividend - devisor
-  sec
-  lda mod10
-  sbc #10
-  tay ; save low byte in Y
-  lda mod10+1
-  sbc #0
-  bcc ignore_result ; branch if dividend < devisor
-  sty mod10
-  sta mod10 + 1
-
-ignore_result:
-  dex
-  bne divloop
-  rol value ; shift in the last bit of the quotient
-  rol value + 1
-
-  lda mod10
-  clc
-  adc #"0"
-  jsr  push_char
-
-  ; if value != 0, then continue dividing
   lda value
-  ora value + 1
-  bne divide ; branch if value not equal to 0
+  sec
+  sbc divider
+  bcc not_prime
+  inc divider
+  cmp value
+  bne divide
+  jmp display_prime
 
-  ldx #0
+not_prime:
+  jsr increment_num
+  jmp check_prime
 
-print:
-  lda message,x
-  beq return
-  jsr print_char
-  inx
-  jmp print
-return:
+display_prime:
+  lda value
+  jsr push_char
+  lda value+1
+  jsr push_char
   rts
 
-number: .word 4200
-
-; Add the character in the A register to the beginning of the
-; null-terminated string `message`
 push_char:
-  pha ; Push new first char onto stack
-  ldy #0
-
-char_loop:
-  lda message,y ; Get char on the string and put into X
-  tax
-  pla
-  sta message,y ; Pull char off stack and add it to the string
-  iny
-  txa
-  pha           ; Push char from string onto stack
-  bne char_loop
-
-  pla
-  sta message,y ; Pull the null off the stack and add to the end of the string
-
-  rts
-
-lcd_wait:
-  pha
-  lda #%00000000  ; Port B is input
-  sta DDRB
-lcdbusy:
-  lda #RW
-  sta PORTA
-  lda #(RW | E)
-  sta PORTA
-  lda PORTB
-  and #%10000000
-  bne lcdbusy
-
-  lda #RW
-  sta PORTA
-  lda #%11111111  ; Port B is output
-  sta DDRB
-  pla
-  rts
-
-lcd_instruction:
-  jsr lcd_wait
-  sta PORTB
-  lda #0         ; Clear RS/RW/E bits
-  sta PORTA
-  lda #E         ; Set E bit to send Instruction
-  sta PORTA
-  lda #0         ; Clear RS/RW/E bits
-  sta PORTA
+  ; Convert number in A register to ASCII and display it on LCD
+  and #0x0F
+  adc #'0'
+  jsr print_char
   rts
 
 print_char:
   jsr lcd_wait
   sta PORTB
-  lda #RS         ; Set RS; Clear RW/E bits
+  lda #RS
   sta PORTA
-  lda #(RS | E)   ; Set E bit to send Instruction
+  lda #(RS | E)
   sta PORTA
-  lda #RS         ; Clear E bits
+  lda #RS
   sta PORTA
+  rts
+
+lcd_instruction:
+  jsr lcd_wait
+  sta PORTB
+  lda #0
+  sta PORTA
+  lda #E
+  sta PORTA
+  lda #0
+  sta PORTA
+  rts
+
+lcd_wait:
+  ; Wait until the LCD is ready to receive a command
+  lda PORTA
+  and #RW
+  bne lcd_wait ; Loop until RW is 0 (LCD is not busy)
   rts
 
 delay:
-  phy
-  phx
-  ldy #$ff
-delay2:
-  ldx #$ff
-delay1:
-  nop
+  ; Simple delay loop
+  ldx #$FF
+delay_loop:
   dex
-  bne delay1
-  dey
-  bne delay2
-  plx
-  ply
-  rts
-
-short_delay:
-  phy
-  phx
-  ldy #$9f
-delay2s:
-  ldx #$ff
-delay1s:
-  nop
-  dex
-  bne delay1s
-  dey
-  bne delay2s
-  plx
-  ply
+  bne delay_loop
   rts
 
 nmi:
-irq:
-    rti
+  rti
 
-  .org $fffa
-  .word nmi
-  .word reset
-  .word irq
+irq:
+  rti
+
+    .org $fffa
+    .word nmi
+    .word reset
+    .word irq

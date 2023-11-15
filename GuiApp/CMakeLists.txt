@@ -59,7 +59,6 @@ juce_add_gui_app(GuiAppExample
 
 target_sources(GuiAppExample
     PRIVATE
-        bullshit.h
         Main.cpp
         MainComponent.cpp)
 

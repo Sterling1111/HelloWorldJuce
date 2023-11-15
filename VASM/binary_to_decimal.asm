@@ -104,7 +104,7 @@ print:
 STOP:
   stp
 
-number: .word 1729
+number: .word 1111
 
 ; Add the character in the A register to the beginning of the 
 ; null-terminated string `message`

@@ -1,14 +1,21 @@
 cmake_minimum_required(VERSION 3.24)
 project(HelloWorldJuce)
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w")
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
+
+project(MyProjectName VERSION 1.0.0)
 
 add_executable(HelloWorldJuce main.cpp)
 
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(JUCE_examples main.cpp GuiApp/bullshit.h GuiApp/bullshit.h)
+add_executable(JUCE_examples main.cpp)
 
 # ==============================================================================
 #

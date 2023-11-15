@@ -22,11 +22,13 @@ public:
     void update() override;
     bool keyStateChanged(bool isKeyDown) override;
 
+private:
+    void updatePixels();
 
 private:
-    juce::Colour backgroundColor;
+    juce::Colour backgroundColor, pixelOffColor;
     juce::Rectangle<float> lcdScreen;
-    std::vector<std::vector<juce::Rectangle<float>>> pixels;
+    std::vector<std::vector<std::pair<juce::Rectangle<float>, juce::Colour>>> pixels;
     System system{0x00, 0x3fff, 0x6000, 0x7fff,
                   0x8000, 0xffff, 1};
 

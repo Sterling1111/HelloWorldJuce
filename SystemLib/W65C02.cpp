@@ -458,7 +458,6 @@ word W65C02::zeroPageIndirect(byte W65C02::* Register, operation op) {
 
 void W65C02::execute(uint64_t numInstructionsToExecute) {
     while(numInstructionsToExecute--) {
-        int* dog = new int[1000];
         if(STOP) continue;
         if(IRQB) interruptRequest();
         if(NMIB) {
@@ -468,7 +467,6 @@ void W65C02::execute(uint64_t numInstructionsToExecute) {
         if(WAIT) continue;
         opcode = opCodeMatrix[fetchByte()];
         (this->*(opcode.instruction))(opcode.addressMode);
-        delete[] dog;
     }
 }
 
