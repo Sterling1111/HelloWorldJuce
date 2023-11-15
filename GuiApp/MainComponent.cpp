@@ -3,6 +3,7 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
+    int dog = 3;
     backgroundColor = juce::Colour((uint8_t)31, 31, 255, (uint8_t)255);
     pixelOffColor = juce::Colour((uint8_t)0, 0, 255, (uint8_t)255);
     pixels.resize(system.lcd.numPixelsX(),
