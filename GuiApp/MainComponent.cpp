@@ -4,8 +4,10 @@
 MainComponent::MainComponent()
 {
     addAndMakeVisible(comp);
+    addAndMakeVisible(ownedArrayComponent);
     setSize (600, 400);
     comp.addMouseListener(this, false);
+    ownedArrayComponent.setBounds(comp.getX(), comp.getBottom() + 5, getWidth() - comp.getX(), getHeight() - comp.getBottom());
 }
 
 MainComponent::~MainComponent()

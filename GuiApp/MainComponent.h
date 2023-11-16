@@ -9,6 +9,47 @@
 
 using namespace juce;
 
+struct Widget : Component
+{
+    explicit Widget(int i) : num{i} {}
+
+    void paint(Graphics& g) override
+    {
+        g.fillAll(Colours::red);
+        g.setColour(Colours::black);
+        g.drawRect(getLocalBounds().reduced(2));
+        g.drawFittedText(String(num), getLocalBounds(), Justification::centred, 1);
+    };
+private:
+    int num{};
+};
+
+struct OwnedArrayComponent : Component
+{
+    OwnedArrayComponent()
+    {
+        for (int i = 0; i < 10; ++i) {
+            auto* widget = widgets.add(new Widget(i));
+            addAndMakeVisible(widget);
+        }
+    }
+
+    void resized() override
+    {
+        auto width = getWidth() / widgets.size();
+        int x = 0;
+        auto h = getHeight();
+
+        for(auto& widget : widgets) {
+            widget->setBounds(x, 0, width, h);
+            x += width;
+        }
+    }
+
+    OwnedArray<Widget> widgets;
+};
+
+
 struct MyComp : Component
 {
     //void resized() override {}
@@ -55,7 +96,7 @@ public:
 private:
     int counter{};
     MyComp comp;
-
+    OwnedArrayComponent ownedArrayComponent;
     //==============================================================================
     // Your private member variables go here...
 
