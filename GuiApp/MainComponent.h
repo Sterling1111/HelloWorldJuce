@@ -24,29 +24,14 @@ private:
     int num{};
 };
 
-struct OwnedArrayComponent : Component
+struct OwnedArrayComponent : Component, Button::Listener
 {
-    OwnedArrayComponent()
-    {
-        for (int i = 0; i < 10; ++i) {
-            auto* widget = widgets.add(new Widget(i));
-            addAndMakeVisible(widget);
-        }
-    }
-
-    void resized() override
-    {
-        auto width = getWidth() / widgets.size();
-        int x = 0;
-        auto h = getHeight();
-
-        for(auto& widget : widgets) {
-            widget->setBounds(x, 0, width, h);
-            x += width;
-        }
-    }
-
-    OwnedArray<Widget> widgets;
+    OwnedArrayComponent();
+    ~OwnedArrayComponent();
+    void resized() override;
+    void buttonClicked(Button* buttonThatWasClicked) override;
+private:
+    OwnedArray<TextButton> buttons;
 };
 
 
@@ -56,14 +41,14 @@ struct MyComp : Component
     void paint(Graphics& g) override { g.fillAll(Colours::green); };
 
     void mouseEnter(const MouseEvent& e) override {
-        DBG("MyComp mouseEnter");
+        //DBG("MyComp mouseEnter");
     }
     void mouseExit(const MouseEvent& e) override {
-        DBG("MyComp mouseExit");
+        //DBG("MyComp mouseExit");
     }
 
     void mouseMove(const MouseEvent& e) override {
-        DBG("MyComp mouseMoved: " << ++counter);
+        //DBG("MyComp mouseMoved: " << ++counter);
     }
 private:
     int counter{};
@@ -85,13 +70,17 @@ public:
     void resized() override;
 
     void mouseEnter(const MouseEvent& e) override {
-        DBG("MainComponent mouseEnter");
+        //DBG("MainComponent mouseEnter");
     }
     void mouseExit(const MouseEvent& e) override {
-        DBG("MainComponent mouseExit");
+        //DBG("MainComponent mouseExit");
     }
     void mouseMove(const MouseEvent& e) override {
-        DBG("MainComponent mouseMoved: " << ++counter);
+        //DBG("MainComponent mouseMoved: " << ++counter);
+    }
+
+    void mouseDown(const MouseEvent& e) override {
+        DBG("you clicked the mouse");
     }
 private:
     int counter{};
