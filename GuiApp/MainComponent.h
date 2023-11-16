@@ -9,6 +9,14 @@
 
 using namespace juce;
 
+struct DualButton : Component
+{
+    DualButton();
+    void resized() override;
+private:
+    TextButton button1 {"button1"}, button2 {"button2"};
+};
+
 struct Widget : Component
 {
     explicit Widget(int i) : num{i} {}
@@ -86,6 +94,7 @@ private:
     int counter{};
     MyComp comp;
     OwnedArrayComponent ownedArrayComponent;
+    DualButton dualButton;
     //==============================================================================
     // Your private member variables go here...
 
