@@ -13,7 +13,7 @@ public:
     // If you've enabled the juce header with `juce_generate_juce_header(<thisTarget>)`
     // you could `#include <JuceHeader.h>` and use `ProjectInfo::projectName` etc. instead.
     //const juce::String getApplicationName() override       { return JUCE_APPLICATION_NAME_STRING; }
-    const juce::String s{"hes got balls"};
+    const juce::String s{"hello world"};
     const juce::String getApplicationName() override       { return s; }
     const juce::String getApplicationVersion() override    { return JUCE_APPLICATION_VERSION_STRING; }
     bool moreThanOneInstanceAllowed() override             { return true; }
@@ -69,8 +69,6 @@ public:
             setUsingNativeTitleBar (true);
             mainComponent = std::make_unique<MainComponent>();
             setContentOwned (mainComponent.get(), true);
-            mainComponent->setWantsKeyboardFocus(true);
-            mainComponent->grabKeyboardFocus();
             setResizable(false, false);
             centreWithSize(getWidth(), getHeight());
             setVisible (true);

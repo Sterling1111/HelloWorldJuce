@@ -5,7 +5,28 @@
 // have called `juce_generate_juce_header(<thisTarget>)` in your CMakeLists.txt,
 // you could `#include <JuceHeader.h>` here instead, to make all your module headers visible.
 #include <juce_gui_extra/juce_gui_extra.h>
-#include "System.h"
+//#include "System.h"
+
+using namespace juce;
+
+struct MyComp : Component
+{
+    //void resized() override {}
+    void paint(Graphics& g) override { g.fillAll(Colours::green); };
+
+    void mouseEnter(const MouseEvent& e) override {
+        DBG("MyComp mouseEnter");
+    }
+    void mouseExit(const MouseEvent& e) override {
+        DBG("MyComp mouseExit");
+    }
+
+    void mouseMove(const MouseEvent& e) override {
+        DBG("MyComp mouseMoved: " << ++counter);
+    }
+private:
+    int counter{};
+};
 //==============================================================================
 /*
     This component lives inside our window, and this is where you should put all
@@ -16,22 +37,24 @@ class MainComponent   : public juce::AnimatedAppComponent
 public:
     //==============================================================================
     MainComponent();
-
+    ~MainComponent();
     //==============================================================================
     void paint (juce::Graphics&) override;
     void update() override;
-    bool keyStateChanged(bool isKeyDown) override;
+    void resized() override;
 
+    void mouseEnter(const MouseEvent& e) override {
+        DBG("MainComponent mouseEnter");
+    }
+    void mouseExit(const MouseEvent& e) override {
+        DBG("MainComponent mouseExit");
+    }
+    void mouseMove(const MouseEvent& e) override {
+        DBG("MainComponent mouseMoved: " << ++counter);
+    }
 private:
-    void updatePixels();
-
-private:
-    juce::Colour backgroundColor, pixelOffColor;
-    juce::Rectangle<float> lcdScreen;
-    std::vector<std::vector<std::pair<juce::Rectangle<float>, juce::Colour>>> pixels;
-    System system{0x00, 0x3fff, 0x6000, 0x7fff,
-                  0x8000, 0xffff, 1};
-
+    int counter{};
+    MyComp comp;
 
     //==============================================================================
     // Your private member variables go here...
