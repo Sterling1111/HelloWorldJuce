@@ -66,6 +66,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(ownedArrayComponent);
     addAndMakeVisible(dualButton);
     addAndMakeVisible(blinkingThing);
+    addAndMakeVisible(highResGui);
     setSize (600, 400);
     comp.addMouseListener(this, false);
     ownedArrayComponent.addMouseListener(this, true);
@@ -105,4 +106,5 @@ void MainComponent::resized() {
                                   getHeight() - comp.getBottom());
     dualButton.setBounds(comp.getBounds().withX(comp.getRight() + 5).withWidth(comp.getWidth() * 2));
     blinkingThing.setBounds(comp.getBounds().withX(dualButton.getRight() + 5));
+    highResGui.setBounds(blinkingThing.getBounds().withX(blinkingThing.getRight() + 5));
 }

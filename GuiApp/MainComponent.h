@@ -9,8 +9,6 @@
 
 using namespace juce;
 
-struct BlinkingThing;
-
 struct DualButton : Component
 {
     DualButton();
@@ -19,6 +17,39 @@ struct DualButton : Component
     void setButton2Handler(std::function<void()> handler);
 private:
     TextButton button1 {"button1"}, button2 {"button2"};
+};
+
+struct MyAsyncHighResGui : Component, AsyncUpdater, HighResolutionTimer
+{
+    void handleAsyncUpdate() override
+    {
+        paintColor = (paintColor + 1) % numColors;
+        repaint();
+    }
+
+    void hiResTimerCallback() override { triggerAsyncUpdate(); }
+
+    void paint(Graphics& g) override
+    {
+        switch (paintColor) {
+            case 0:
+                g.setColour(Colours::green);
+                break;
+            case 1:
+                g.setColour(Colours::red);
+                break;
+            case 2:
+                g.setColour(Colours::blue);
+                break;
+        }
+        g.fillAll();
+    }
+
+    MyAsyncHighResGui() { startTimer(1000 / 3); }
+    ~MyAsyncHighResGui() { stopTimer(); }
+private:
+    int paintColor{};
+    const int numColors{3};
 };
 
 struct BlinkingThing : Component, Timer
@@ -125,6 +156,7 @@ private:
     OwnedArrayComponent ownedArrayComponent;
     BlinkingThing blinkingThing;
     DualButton dualButton;
+    MyAsyncHighResGui highResGui;
     //==============================================================================
     // Your private member variables go here...
 
