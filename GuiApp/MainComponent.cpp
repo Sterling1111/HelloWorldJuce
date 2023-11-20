@@ -1,21 +1,23 @@
 #include "MainComponent.h"
 
+#include <utility>
+
 DualButton::DualButton() {
     addAndMakeVisible(button1);
     addAndMakeVisible(button2);
+}
 
-    button1.onClick = [this]() {
-        DBG("Button 1's :" + this->button1.getBounds().toString());
-    };
+void DualButton::setButton1Handler(std::function<void()> handler) {
+    button1.onClick = std::move(handler);
+}
 
-    button2.onClick = [this]() {
-        DBG("Button 2's :" + this->button2.getBounds().toString());
-    };
+void DualButton::setButton2Handler(std::function<void()> handler) {
+    button2.onClick = std::move(handler);
 }
 
 void DualButton::resized() {
     auto bounds = getLocalBounds();
-    button1.setBounds(bounds.removeFromLeft(30));
+    button1.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
     button2.setBounds(bounds);
 }
 
@@ -63,10 +65,18 @@ MainComponent::MainComponent()
     addAndMakeVisible(comp);
     addAndMakeVisible(ownedArrayComponent);
     addAndMakeVisible(dualButton);
+    addAndMakeVisible(blinkingThing);
     setSize (600, 400);
     comp.addMouseListener(this, false);
     ownedArrayComponent.addMouseListener(this, true);
 
+    dualButton.setButton1Handler([this] {
+        blinkingThing.startTimerHz(2);
+    });
+
+    dualButton.setButton2Handler([this] {
+        blinkingThing.startTimerHz(4);
+    });
 }
 
 MainComponent::~MainComponent()
@@ -93,5 +103,6 @@ void MainComponent::resized() {
                                   comp.getBottom() + 5,
                                   getWidth() - comp.getX(),
                                   getHeight() - comp.getBottom());
-    dualButton.setBounds(comp.getBounds().withX(comp.getRight() + 5));
+    dualButton.setBounds(comp.getBounds().withX(comp.getRight() + 5).withWidth(comp.getWidth() * 2));
+    blinkingThing.setBounds(comp.getBounds().withX(dualButton.getRight() + 5));
 }

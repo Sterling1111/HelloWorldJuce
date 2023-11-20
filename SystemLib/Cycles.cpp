@@ -1,5 +1,5 @@
 #include "Cycles.h"
-#include <process.h>
+//#include <process.h>
 
 Cycles::Cycles() {
     cycles = 0;

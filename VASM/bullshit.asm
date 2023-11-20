@@ -107,9 +107,9 @@ lcdbusy:
 lcd_instruction:
    jsr lcd_wait
    sta PORTB
-   lda #0         ; Clear RS/RW/E bits - RS=0=instruction register
+   lda #0         ; Clear RS/RW/E bits - RS=0=Instruction register
    sta PORTA
-   lda #E         ; Set E bit to send instruction
+   lda #E         ; Set E bit to send Instruction
    sta PORTA
    lda #0         ; Clear RS/RW/E bits
    sta PORTA
@@ -120,7 +120,7 @@ print_char:
    sta PORTB
    lda #RS        ; Set RS bit; Clear RW/E bits - RS=1=data register
    sta PORTA
-   lda #(RS | E)  ; Set RS + E bit to send instruction
+   lda #(RS | E)  ; Set RS + E bit to send Instruction
    sta PORTA
    lda #RS        ; Clear E bit
    sta PORTA

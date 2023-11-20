@@ -9,12 +9,41 @@
 
 using namespace juce;
 
+struct BlinkingThing;
+
 struct DualButton : Component
 {
     DualButton();
     void resized() override;
+    void setButton1Handler(std::function<void()> handler);
+    void setButton2Handler(std::function<void()> handler);
 private:
     TextButton button1 {"button1"}, button2 {"button2"};
+};
+
+struct BlinkingThing : Component, Timer
+{
+    BlinkingThing()
+    {
+    }
+    ~BlinkingThing() override
+    {
+        stopTimer();
+    }
+
+    void timerCallback() override
+    {
+        isRed = !isRed;
+        repaint();
+    }
+
+    void paint(Graphics& g) override
+    {
+        g.fillAll(isRed ? Colours::red : Colours::green);
+    }
+
+private:
+    bool isRed{};
 };
 
 struct Widget : Component
@@ -94,6 +123,7 @@ private:
     int counter{};
     MyComp comp;
     OwnedArrayComponent ownedArrayComponent;
+    BlinkingThing blinkingThing;
     DualButton dualButton;
     //==============================================================================
     // Your private member variables go here...

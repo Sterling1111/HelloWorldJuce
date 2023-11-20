@@ -40,8 +40,9 @@ add_executable(JUCE_examples main.cpp)
 #
 # ==============================================================================
 
-add_subdirectory("C://JUCE" JUCE)
-add_subdirectory("C://JUCE//extras" extras)
+#add_subdirectory("C://JUCE" JUCE)
+#add_subdirectory("C://JUCE//extras" extras)
+find_package(JUCE CONFIG REQUIRED)
 add_subdirectory(AudioPlugin)
 add_subdirectory(ConsoleApp)
 add_subdirectory(GuiApp)
