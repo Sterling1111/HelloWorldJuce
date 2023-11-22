@@ -1,6 +1,102 @@
 #include "MainComponent.h"
-
 #include <utility>
+
+ImageProcessingThread::ImageProcessingThread(int w_, int h_) :
+                                                Thread{"ImageProcessingThread"}, w{w_}, h{h_}
+{
+    startThread();
+}
+
+ImageProcessingThread::~ImageProcessingThread() { stopThread(500); }
+
+void ImageProcessingThread::setUpdateRendererFunc(std::function<void(Image &&)> f)
+{
+    updateRenderer = std::move(f);
+}
+
+void ImageProcessingThread::run()
+{
+    while( true )
+    {
+        if(threadShouldExit()) break;
+
+        auto canvas = Image(Image::PixelFormat::RGB, w, h, true);
+        bool shouldBail{};
+
+        if(threadShouldExit()) break;
+
+        for (int i = 0; i < w; ++i) {
+            if(threadShouldExit()) {
+                shouldBail = true;
+                break;
+            }
+            for (int j = 0; j < h; ++j) {
+                canvas.setPixelAt(i, j, Colour(r.nextFloat(), r.nextFloat(), r.nextFloat(), 1.f));
+            }
+        }
+
+        if(shouldBail) break;
+
+        if(threadShouldExit()) break;
+
+        if(updateRenderer)
+            updateRenderer(std::move(canvas));
+
+        wait(-1);
+    }
+}
+
+LambdaTimer::LambdaTimer(int ms, std::function<void()> f) : lambda{ std::move(f) }
+{
+    startTimer(ms);
+}
+
+LambdaTimer::~LambdaTimer()
+{
+    stopTimer();
+}
+
+void LambdaTimer::timerCallback()
+{
+    stopTimer();
+    if(lambda) lambda();
+}
+
+Renderer::Renderer()
+{
+    lambdaTimer = std::make_unique<LambdaTimer>(10, [this](){
+        processingThread = std::make_unique<ImageProcessingThread>(getWidth(), getHeight());
+        processingThread->setUpdateRendererFunc([this](Image&& image)
+        {
+           int renderIndex = firstImage ? 0 : 1;
+           firstImage = !firstImage;
+           imageToRender[renderIndex] = std::move(image);
+
+           triggerAsyncUpdate();
+
+           lambdaTimer = std::make_unique<LambdaTimer>(200, [this]() {
+                processingThread->notify();
+           });
+        });
+    });
+}
+
+Renderer::~Renderer()
+{
+    processingThread.reset();
+    lambdaTimer.reset();
+}
+
+void Renderer::paint(Graphics& g)
+{
+    g.drawImage(firstImage ? imageToRender[0] : imageToRender[1],
+           getLocalBounds().toFloat());
+}
+
+void Renderer::handleAsyncUpdate()
+{
+    repaint();
+}
 
 DualButton::DualButton() {
     addAndMakeVisible(button1);
@@ -67,6 +163,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(dualButton);
     addAndMakeVisible(blinkingThing);
     addAndMakeVisible(highResGui);
+    addAndMakeVisible(renderer);
     setSize (600, 400);
     comp.addMouseListener(this, false);
     ownedArrayComponent.addMouseListener(this, true);
@@ -107,4 +204,5 @@ void MainComponent::resized() {
     dualButton.setBounds(comp.getBounds().withX(comp.getRight() + 5).withWidth(comp.getWidth() * 2));
     blinkingThing.setBounds(comp.getBounds().withX(dualButton.getRight() + 5));
     highResGui.setBounds(blinkingThing.getBounds().withX(blinkingThing.getRight() + 5));
+    renderer.setBounds(highResGui.getBounds().withX(highResGui.getRight() + 5));
 }

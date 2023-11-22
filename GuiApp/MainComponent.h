@@ -9,6 +9,72 @@
 
 using namespace juce;
 
+struct MyThread : Thread
+{
+    MyThread() : Thread("MyThread")
+    {
+        startThread();
+    }
+
+    ~MyThread() override
+    {
+        stopThread(100);
+    }
+
+    void run() override
+    {
+        while( true )
+        {
+            if(threadShouldExit()) break;
+
+
+            if(threadShouldExit()) break;
+
+
+            if(threadShouldExit()) break;
+
+            wait(-1);
+        }
+    }
+};
+
+struct ImageProcessingThread : Thread
+{
+    ImageProcessingThread(int w_, int h_);
+    ~ImageProcessingThread() override;
+
+    void run() override;
+    void setUpdateRendererFunc(std::function<void(Image&&)> f);
+
+private:
+    int w{}, h{};
+    std::function<void(Image&&)> updateRenderer{};
+    Random r;
+};
+
+struct LambdaTimer : Timer
+{
+    LambdaTimer(int ms, std::function<void()> f);
+    ~LambdaTimer() override;
+    void timerCallback() override;
+private:
+    std::function<void()> lambda;
+};
+
+struct Renderer : Component, AsyncUpdater
+{
+    Renderer();
+    ~Renderer() override;
+    void paint(Graphics& g) override;
+    void handleAsyncUpdate() override;
+
+private:
+    std::unique_ptr<ImageProcessingThread> processingThread;
+    std::unique_ptr<LambdaTimer> lambdaTimer;
+    bool firstImage = true;
+    std::array<Image, 2> imageToRender;
+};
+
 struct DualButton : Component
 {
     DualButton();
@@ -46,7 +112,7 @@ struct MyAsyncHighResGui : Component, AsyncUpdater, HighResolutionTimer
     }
 
     MyAsyncHighResGui() { startTimer(1000 / 3); }
-    ~MyAsyncHighResGui() { stopTimer(); }
+    ~MyAsyncHighResGui() override { stopTimer(); }
 private:
     int paintColor{};
     const int numColors{3};
@@ -157,6 +223,7 @@ private:
     BlinkingThing blinkingThing;
     DualButton dualButton;
     MyAsyncHighResGui highResGui;
+    Renderer renderer;
     //==============================================================================
     // Your private member variables go here...
 

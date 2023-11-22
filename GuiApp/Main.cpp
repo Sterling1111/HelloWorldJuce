@@ -23,9 +23,6 @@ public:
     {
         // This method is where you should put your application's initialisation code..
         juce::ignoreUnused (commandLine);
-
-        juce::Logger::outputDebugString("what the hell");
-
         mainWindow = std::make_unique<MainWindow> (getApplicationName());
     }
 
