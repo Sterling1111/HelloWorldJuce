@@ -5,6 +5,7 @@
 // have called `juce_generate_juce_header(<thisTarget>)` in your CMakeLists.txt,
 // you could `#include <JuceHeader.h>` here instead, to make all your module headers visible.
 #include <juce_gui_extra/juce_gui_extra.h>
+#include "DataRace.h"
 //#include "System.h"
 
 using namespace juce;
@@ -224,6 +225,7 @@ private:
     DualButton dualButton;
     MyAsyncHighResGui highResGui;
     Renderer renderer;
+    Test test;
     //==============================================================================
     // Your private member variables go here...
 
