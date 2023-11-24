@@ -19,16 +19,16 @@ const Data b = {0xbbbbbbbb, 0xbbbbbbbb};
 
 struct A : Thread
 {
-    A(Data& d) : Thread("A"), data{d} {startThread(); }
-    ~A() { stopThread(100); }
+    explicit A(Data& d) : Thread("A"), data{d} {startThread(); }
+    ~A() override { stopThread(100); }
     void run() override;
     Data& data;
 };
 
 struct B : Thread
 {
-    B(Data& d) : Thread("B"), data{d} { startThread(); }
-    ~B() { stopThread(100); }
+    explicit B(Data& d) : Thread("B"), data{d} { startThread(); }
+    ~B() override { stopThread(100); }
     void run() override;
     Data& data;
 };
@@ -38,6 +38,14 @@ struct Test
     Data d;
     A a{d};
     B b{d};
+};
+
+struct LockingStruct {
+    void threadAFunc();
+    void threadBFunc();
+
+    int datamember{};
+    CriticalSection criticalSection;
 };
 
 #endif //MYPROJECTNAME_DATARACE_H

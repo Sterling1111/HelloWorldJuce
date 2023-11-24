@@ -41,15 +41,16 @@ struct MyThread : Thread
 
 struct ImageProcessingThread : Thread
 {
-    ImageProcessingThread(int w_, int h_);
+    using ImagePassingFunc = std::function<void(Image, const ImageProcessingThread&)>;
+    ImageProcessingThread(int w_, int h_, ImagePassingFunc f);
     ~ImageProcessingThread() override;
 
     void run() override;
-    void setUpdateRendererFunc(std::function<void(Image&&)> f);
+    //void setUpdateRendererFunc(std::function<void(Image&&)> f);
 
 private:
     int w{}, h{};
-    std::function<void(Image&&)> updateRenderer{};
+    ImagePassingFunc updateRenderer{};
     Random r;
 };
 
@@ -62,18 +63,41 @@ private:
     std::function<void()> lambda;
 };
 
-struct Renderer : Component, AsyncUpdater
+template<int Max>
+struct ImageBuffer
+{
+    void push(Image image)
+    {
+        const ScopedWriteLock swl(readWriteLock);
+        images[index] = image;
+        index = (index + 1) % Max;
+    }
+
+    Image read()
+    {
+        const ScopedReadLock srl(readWriteLock);
+        return images[index];
+    }
+private:
+    ReadWriteLock readWriteLock;
+    size_t index{};
+    std::array<Image, Max> images;
+};
+
+struct Renderer : Component, Timer
 {
     Renderer();
     ~Renderer() override;
     void paint(Graphics& g) override;
-    void handleAsyncUpdate() override;
+    void timerCallback() override;
+    //void handleAsyncUpdate() override;
+    ImageBuffer<2> imageToRender;
 
 private:
     std::unique_ptr<ImageProcessingThread> processingThread;
     std::unique_ptr<LambdaTimer> lambdaTimer;
-    bool firstImage = true;
-    std::array<Image, 2> imageToRender;
+    /*Atomic<bool> firstImage {true};
+    std::array<Image, 2> imageToRender;*/
 };
 
 struct DualButton : Component
@@ -121,9 +145,7 @@ private:
 
 struct BlinkingThing : Component, Timer
 {
-    BlinkingThing()
-    {
-    }
+    BlinkingThing() = default;
     ~BlinkingThing() override
     {
         stopTimer();
@@ -225,7 +247,7 @@ private:
     DualButton dualButton;
     MyAsyncHighResGui highResGui;
     Renderer renderer;
-    Test test;
+    //Test test;
     //==============================================================================
     // Your private member variables go here...
 

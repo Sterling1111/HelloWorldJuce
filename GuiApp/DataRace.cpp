@@ -44,4 +44,18 @@ void B::run() {
     }
 }
 
+void LockingStruct::threadAFunc() {
+    {
+        const ScopedLock sl(criticalSection);
+        datamember = 2;
+    }
+    DBG("thread A Func: " << datamember << "\n");
+}
 
+void LockingStruct::threadBFunc() {
+    {
+        const ScopedLock sl(criticalSection);
+        datamember = 5;
+    }
+    DBG("thread B Func: " << datamember << "\n");
+}

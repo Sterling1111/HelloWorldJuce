@@ -1,18 +1,18 @@
 #include "MainComponent.h"
 #include <utility>
 
-ImageProcessingThread::ImageProcessingThread(int w_, int h_) :
-                                                Thread{"ImageProcessingThread"}, w{w_}, h{h_}
+ImageProcessingThread::ImageProcessingThread(int w_, int h_, ImagePassingFunc f) :
+                                                Thread{"ImageProcessingThread"}, w{w_}, h{h_}, updateRenderer{std::move(f)}
 {
     startThread();
 }
 
 ImageProcessingThread::~ImageProcessingThread() { stopThread(500); }
 
-void ImageProcessingThread::setUpdateRendererFunc(std::function<void(Image &&)> f)
+/*void ImageProcessingThread::setUpdateRendererFunc(std::function<void(Image &&)> f)
 {
     updateRenderer = std::move(f);
-}
+}*/
 
 void ImageProcessingThread::run()
 {
@@ -40,7 +40,7 @@ void ImageProcessingThread::run()
         if(threadShouldExit()) break;
 
         if(updateRenderer)
-            updateRenderer(std::move(canvas));
+            updateRenderer(canvas, *this);
 
         wait(-1);
     }
@@ -65,35 +65,44 @@ void LambdaTimer::timerCallback()
 Renderer::Renderer()
 {
     lambdaTimer = std::make_unique<LambdaTimer>(10, [this](){
-        processingThread = std::make_unique<ImageProcessingThread>(getWidth(), getHeight());
-        processingThread->setUpdateRendererFunc([this](Image&& image)
+        processingThread = std::make_unique<ImageProcessingThread>(getWidth(), getHeight(),
+        [this](Image image, const ImageProcessingThread& imageThread)
         {
-           int renderIndex = firstImage ? 0 : 1;
-           firstImage = !firstImage;
-           imageToRender[renderIndex] = std::move(image);
+           /*int renderIndex = firstImage.get() ? 0 : 1;
+           firstImage = !firstImage.get();
+           imageToRender[renderIndex] = image;*/
+           imageToRender.push(image);
+           //triggerAsyncUpdate();
 
-           triggerAsyncUpdate();
+           if(imageThread.threadShouldExit()) return;
 
-           lambdaTimer = std::make_unique<LambdaTimer>(200, [this]() {
+           lambdaTimer = std::make_unique<LambdaTimer>(1000, [this]() {
                 processingThread->notify();
            });
         });
     });
+    startTimerHz(20);
 }
 
 Renderer::~Renderer()
 {
-    processingThread.reset();
     lambdaTimer.reset();
+    processingThread.reset();
+    stopTimer();
 }
 
 void Renderer::paint(Graphics& g)
 {
-    g.drawImage(firstImage ? imageToRender[0] : imageToRender[1],
+    g.drawImage(imageToRender.read(),
            getLocalBounds().toFloat());
 }
 
-void Renderer::handleAsyncUpdate()
+/*void Renderer::handleAsyncUpdate()
+{
+    repaint();
+}*/
+
+void Renderer::timerCallback()
 {
     repaint();
 }
@@ -164,7 +173,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(blinkingThing);
     addAndMakeVisible(highResGui);
     addAndMakeVisible(renderer);
-    setSize (600, 400);
+    setSize (700, 400);
     comp.addMouseListener(this, false);
     ownedArrayComponent.addMouseListener(this, true);
 
