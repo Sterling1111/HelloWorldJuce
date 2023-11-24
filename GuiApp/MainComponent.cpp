@@ -21,23 +21,15 @@ void ImageProcessingThread::run()
         if(threadShouldExit()) break;
 
         auto canvas = Image(Image::PixelFormat::RGB, w, h, true);
-        bool shouldBail{};
-
-        if(threadShouldExit()) break;
 
         for (int i = 0; i < w; ++i) {
             if(threadShouldExit()) {
-                shouldBail = true;
-                break;
+                return;
             }
             for (int j = 0; j < h; ++j) {
                 canvas.setPixelAt(i, j, Colour(r.nextFloat(), r.nextFloat(), r.nextFloat(), 1.f));
             }
         }
-
-        if(shouldBail) break;
-
-        if(threadShouldExit()) break;
 
         if(updateRenderer)
             updateRenderer(canvas, *this);
@@ -68,11 +60,7 @@ Renderer::Renderer()
         processingThread = std::make_unique<ImageProcessingThread>(getWidth(), getHeight(),
         [this](Image image, const ImageProcessingThread& imageThread)
         {
-           /*int renderIndex = firstImage.get() ? 0 : 1;
-           firstImage = !firstImage.get();
-           imageToRender[renderIndex] = image;*/
            imageToRender.push(image);
-           //triggerAsyncUpdate();
 
            if(imageThread.threadShouldExit()) return;
 
@@ -94,17 +82,56 @@ Renderer::~Renderer()
 void Renderer::paint(Graphics& g)
 {
     g.drawImage(imageToRender.read(),
-           getLocalBounds().toFloat());
+                getLocalBounds().toFloat());
 }
-
-/*void Renderer::handleAsyncUpdate()
-{
-    repaint();
-}*/
 
 void Renderer::timerCallback()
 {
     repaint();
+}
+
+Renderer2::Renderer2() {
+    Timer::callAfterDelay(10, [this]() {
+        SafePointer<Renderer2> safePtr{this};
+        if(safePtr.getComponent())
+            safePtr->loop();
+    });
+}
+
+void Renderer2::paint(Graphics &g) {
+    g.drawImage(imageToRender.read(),
+                getLocalBounds().toFloat());
+}
+
+void Renderer2::loop() {
+    auto w = getWidth(), h = getHeight();
+    Thread::launch([this, w, h ]() {
+        Random r;
+        auto canvas = Image(Image::PixelFormat::RGB, w, h, true);
+
+        for (int i = 0; i < w; ++i) {
+
+            for (int j = 0; j < h; ++j) {
+                canvas.setPixelAt(i, j, Colour(r.nextFloat(), r.nextFloat(), r.nextFloat(), 1.f));
+            }
+        }
+
+        SafePointer<Renderer2> safePtr{this};
+        if(safePtr.getComponent())
+            safePtr->imageToRender.push(canvas);
+
+        Timer::callAfterDelay(10, [this]() {
+            SafePointer<Renderer2> safePtr{this};
+            if(safePtr.getComponent())
+                safePtr->repaint();
+        });
+
+        Timer::callAfterDelay(1000, [this]() {
+            SafePointer<Renderer2> safePtr{this};
+            if(safePtr.getComponent())
+                safePtr->loop();
+        });
+    });
 }
 
 DualButton::DualButton() {
@@ -173,7 +200,8 @@ MainComponent::MainComponent()
     addAndMakeVisible(blinkingThing);
     addAndMakeVisible(highResGui);
     addAndMakeVisible(renderer);
-    setSize (700, 400);
+    addAndMakeVisible(renderer2);
+    setSize (800, 400);
     comp.addMouseListener(this, false);
     ownedArrayComponent.addMouseListener(this, true);
 
@@ -214,4 +242,5 @@ void MainComponent::resized() {
     blinkingThing.setBounds(comp.getBounds().withX(dualButton.getRight() + 5));
     highResGui.setBounds(blinkingThing.getBounds().withX(blinkingThing.getRight() + 5));
     renderer.setBounds(highResGui.getBounds().withX(highResGui.getRight() + 5));
+    renderer2.setBounds(renderer.getBounds().withX(renderer.getRight() + 5));
 }

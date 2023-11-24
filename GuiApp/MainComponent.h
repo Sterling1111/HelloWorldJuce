@@ -90,14 +90,20 @@ struct Renderer : Component, Timer
     ~Renderer() override;
     void paint(Graphics& g) override;
     void timerCallback() override;
-    //void handleAsyncUpdate() override;
     ImageBuffer<2> imageToRender;
 
 private:
     std::unique_ptr<ImageProcessingThread> processingThread;
     std::unique_ptr<LambdaTimer> lambdaTimer;
-    /*Atomic<bool> firstImage {true};
-    std::array<Image, 2> imageToRender;*/
+};
+
+struct Renderer2 : Component
+{
+    Renderer2();
+    void paint(Graphics& g) override;
+private:
+    void loop();
+    ImageBuffer<2> imageToRender;
 };
 
 struct DualButton : Component
@@ -247,6 +253,7 @@ private:
     DualButton dualButton;
     MyAsyncHighResGui highResGui;
     Renderer renderer;
+    Renderer2 renderer2;
     //Test test;
     //==============================================================================
     // Your private member variables go here...
