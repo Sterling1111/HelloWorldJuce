@@ -25,7 +25,7 @@ public:
     byte PS_byte{};
     Bus* bus;
 private:
-    byte ZERO = 0x00; //This is meant to make the STZ Instruction work
+    byte ZERO = 0x00; //This is meant to make the STZ instruction work
 
 public:
     /*carry, zero, interrupt disable, decimal mode, break command,

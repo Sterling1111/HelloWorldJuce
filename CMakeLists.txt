@@ -39,10 +39,20 @@ add_executable(JUCE_examples main.cpp)
 #
 # ==============================================================================
 
-#add_subdirectory("C://JUCE" JUCE)
-#add_subdirectory("C://JUCE//extras" extras)
-find_package(JUCE CONFIG REQUIRED)
-add_subdirectory(AudioPlugin)
-add_subdirectory(ConsoleApp)
-add_subdirectory(GuiApp)
-add_subdirectory(SystemLib)
+if (WIN32)
+    add_subdirectory("C://JUCE" JUCE)
+    add_subdirectory("C://JUCE//extras" extras)
+else ()
+    find_package(JUCE CONFIG REQUIRED)
+endif ()
+
+set(SUBDIRS
+        AudioPlugin
+        ConsoleApp
+        GuiApp
+        SystemLib
+)
+
+foreach (subdir ${SUBDIRS})
+    add_subdirectory(${subdir})
+endforeach ()
